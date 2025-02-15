@@ -20,7 +20,7 @@ export default function PlayersPage() {
   const [teams, setTeams] = useState<Team[]>([]);
 
   useEffect(() => {
-    fetch("/api/players")
+    fetch("/api/teams")
       .then(async (res) => {
         const text = await res.text();
         try {

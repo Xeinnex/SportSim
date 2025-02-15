@@ -3,7 +3,7 @@ import mysql from "mysql2/promise";
 
 export async function GET() {
     try {
-        console.log("✅ API /api/players was hit!");
+        console.log("✅ API /api/teams was hit!");
 
         const db = await mysql.createConnection({
             host: process.env.DB_HOST,
