@@ -1,41 +1,49 @@
-import { NextResponse } from "next/server";
-import mysql from "mysql2/promise";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function GET() {
-    try {
-        console.log("✅ API /api/teams was hit!");
+  try {
+    // Query to fetch all teams, players, their stats, and position
+    const teams = await prisma.team.findMany({
+      include: {
+        players: {
+          include: {
+            player: {
+              include: {
+                stats: true, // Fetch PlayerPerformance (stats)
+              },
+            },
+          },
+        },
+      },
+    });
 
-        const db = await mysql.createConnection({
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
-        });
+    console.log(JSON.stringify(teams, null, 2)); // Log the entire teams data to check the structure
 
-        console.log("✅ Connected to database!");
+    // Map the result to structure the data properly, including position
+    const teamsWithPlayers = teams.map((team) => ({
+      id: team.id,
+      name: team.name,
+      players: team.players.map((teamPlayer) => ({
+        id: teamPlayer.player.id,
+        name: teamPlayer.player.name,
+        lastName: teamPlayer.player.lastName,
+        age: teamPlayer.player.age,
+        position: teamPlayer.player.position, // Ensure position is included
+        stats: teamPlayer.player.stats, // Include player stats
+      })),
+    }));
 
-        // Ensure players are uniquely listed
-        const [players]: any = await db.execute(`
-            SELECT DISTINCT 
-                players.id, 
-                players.name, 
-                players.last_name, 
-                players.position, 
-                players.age, 
-                teams.name AS team_name
-            FROM players
-            LEFT JOIN team_players ON players.id = team_players.player_id
-            LEFT JOIN teams ON team_players.team_id = teams.id
-            ORDER BY players.last_name, players.name;
-        `);
-
-        //console.log("✅ Query Result:", JSON.stringify(players, null, 2));
-
-        db.end();
-        return NextResponse.json({ success: true, players });
-    } catch (error: any) {
-        console.error("❌ Database Error:", error);
-
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-    }
+    // Return the teams and players data as JSON
+    return new Response(JSON.stringify({ teams: teamsWithPlayers }), {
+      status: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    return new Response(
+      JSON.stringify({ error: "Failed to fetch teams and players" }),
+      { status: 500 }
+    );
+  }
 }
