@@ -1,75 +1,139 @@
 "use client";
 import { useEffect, useState } from "react";
 import TeamCard from "@/components/TeamCard";
-
-type Player = {
-  id: number;
-  name: string;
-  last_name: string;
-  age: number;
-  team_name: string;
-};
-
-type Team = {
-  id: number;
-  name: string;
-  players: Player[];
-};
+import { Player, Team } from "../../types";
 
 export default function PlayersPage() {
   const [teams, setTeams] = useState<Team[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/teams")
       .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch teams: ${res.statusText}`);
+        }
+
         const text = await res.text();
+
         try {
-          const data = JSON.parse(text);
-          if (!res.ok) throw new Error(data.error || "Failed to fetch players");
+          const data =
+            text.startsWith("{") || text.startsWith("[")
+              ? JSON.parse(text)
+              : null;
 
-          // Get unique team names
-          const uniqueTeams = new Set<string>();
-          data.players.forEach((player: Player) =>
-            uniqueTeams.add(player.team_name)
-          );
+          if (!data) {
+            throw new Error("Response is not valid JSON");
+          }
 
-          // Initialize teams, including empty ones
-          const teamsMap: Record<string, Team> = {};
-          Array.from(uniqueTeams).forEach((teamName, index) => {
-            teamsMap[teamName] = {
-              id: index + 1, // Fake ID
-              name: teamName,
-              players: [],
-            };
+          console.log("Raw API Response:", data);
+
+          const teamsMap: Record<number, Team> = {};
+          data.teams.forEach((team: Team) => {
+            if (!teamsMap[team.id]) {
+              teamsMap[team.id] = {
+                id: team.id,
+                name: team.name,
+                players: [],
+              };
+            }
+
+            team.players.forEach((player: Player) => {
+              const avgStats = calculateAvgScore(player);
+              teamsMap[team.id].players.push({ ...player, avgStats });
+            });
+
+            // Sort players within each team by highest avgStats
+            teamsMap[team.id].players.sort((a, b) => b.avgStats - a.avgStats);
           });
 
-          // Assign players to teams
-          data.players.forEach((player: Player) => {
-            teamsMap[player.team_name].players.push(player);
+          // Convert teamsMap to an array and sort by best player's avgStats
+          const sortedTeams = Object.values(teamsMap).sort((a, b) => {
+            const bestA = a.players[0]?.avgStats || 0;
+            const bestB = b.players[0]?.avgStats || 0;
+            return bestB - bestA;
           });
-
-          // Convert to sorted array
-          const sortedTeams = Object.values(teamsMap).sort((a, b) =>
-            a.name.localeCompare(b.name)
-          );
-
-          // Debugging: Check if empty teams exist
-          console.log("✅ Processed Teams:", sortedTeams);
 
           setTeams(sortedTeams);
         } catch (parseError) {
           console.error("❌ JSON Parse Error:", parseError);
+          setError("Failed to parse teams data.");
         }
       })
-      .catch((err) => console.error("❌ Fetch Error:", err));
+      .catch((err) => {
+        console.error("❌ Fetch Error:", err);
+        setError(err.message || "An error occurred while fetching teams.");
+      });
   }, []);
+
+  const calculateAvgScore = (player: Player): number => {
+    if (
+      !player.stats ||
+      !Array.isArray(player.stats) ||
+      player.stats.length === 0
+    ) {
+      return 0; // No stats available
+    }
+
+    const playerStats = player.stats[0]; // Get first stats object
+    let relevantStats: number[] = [];
+
+    switch (player.position) {
+      case "fwd":
+        relevantStats = [
+          playerStats.shooting,
+          playerStats.passing,
+          playerStats.dribbling, // Fixed typo
+          playerStats.speed,
+          playerStats.strength,
+        ];
+        break;
+      case "def":
+        relevantStats = [
+          playerStats.block,
+          playerStats.passing,
+          playerStats.tackling,
+          playerStats.speed,
+          playerStats.interceptions,
+        ];
+        break;
+      case "mid":
+        relevantStats = [
+          playerStats.passing,
+          playerStats.dribbling, // Fixed typo
+          playerStats.strength,
+          playerStats.speed,
+          playerStats.interceptions,
+        ];
+        break;
+      default:
+        relevantStats = [
+          playerStats.save,
+          playerStats.passing,
+          playerStats.block,
+          playerStats.tackling,
+        ];
+        break;
+    }
+
+    if (relevantStats.length === 0) return 0; // Avoid division by zero
+
+    const sum = relevantStats.reduce((acc, stat) => acc + stat, 0);
+    return Math.round((sum / relevantStats.length) * 10) / 10;
+  };
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex justify-center p-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {teams.map((team) => (
-          <TeamCard key={team.id} team={team} />
-        ))}
+      <div className="w-full max-w-7xl">
+        {error ? (
+          <div className="text-red-500">{error}</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {teams.map((team) => (
+              <TeamCard key={team.id} team={team} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

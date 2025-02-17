@@ -1,27 +1,32 @@
-USE xeinnex_sport_sim;
--- formula to add stats to players  JSON_ARRAY(CEIL(65 - (ABS(age - 27)) + (RAND() * 24 - 10)))
-
--- SELECT * FROM player_stats
--- JOIN players ON player_stats.player_id = players.id
--- WHERE players.position = 'fwd';
-
-
 SELECT 
-    players.name,
-    players.last_name,
-    players.age,
-    players.position,
-    teams.name AS team_name,
-    ROUND(
-        (
-            JSON_UNQUOTE(JSON_EXTRACT(player_stats.shooting, '$[0]')) + 
-            JSON_UNQUOTE(JSON_EXTRACT(player_stats.dribbling, '$[0]')) + 
-            JSON_UNQUOTE(JSON_EXTRACT(player_stats.passing, '$[0]')) + 
-            JSON_UNQUOTE(JSON_EXTRACT(player_stats.speed, '$[0]'))
-        ) / 4, 2
-    ) AS average_offense
-FROM players
-JOIN team_players ON players.id = team_players.player_id
-JOIN teams ON team_players.team_id = teams.id
-JOIN player_stats ON players.id = player_stats.player_id
-ORDER BY average_offense DESC;
+  t.name AS team_name,
+  AVG(ranked_players.average_performance) AS team_avg_performance
+FROM Player p
+JOIN PlayerPerformance pp ON p.id = pp.playerId
+JOIN TeamPlayers tp ON p.id = tp.playerId
+JOIN Team t ON tp.teamId = t.id
+JOIN (
+  SELECT 
+    tp.teamId,
+    p.id AS player_id,
+    CASE 
+      WHEN p.position = 'fwd' THEN
+        (pp.shooting + pp.passing + pp.dribbling + pp.speed + pp.strength) / 5.0
+      WHEN p.position = 'mid' THEN
+        (pp.passing + pp.dribbling + pp.speed + pp.stamina + pp.interceptions) / 5.0
+      WHEN p.position = 'def' THEN
+        (pp.passing + pp.block + pp.tackling + pp.interceptions + pp.speed) / 5.0
+      WHEN p.position = 'gk' THEN
+        (pp.save + pp.strength + pp.interceptions + pp.block) / 4.0
+    END AS average_performance
+  FROM Player p
+  JOIN PlayerPerformance pp ON p.id = pp.playerId
+  JOIN TeamPlayers tp ON p.id = tp.playerId
+  JOIN Team t ON tp.teamId = t.id
+  ORDER BY tp.teamId, average_performance DESC
+) ranked_players ON tp.playerId = ranked_players.player_id
+WHERE (SELECT COUNT(*) 
+       FROM TeamPlayers tp2 
+       WHERE tp2.teamId = ranked_players.teamId AND tp2.playerId <= ranked_players.player_id) <= 11
+GROUP BY t.name
+ORDER BY team_avg_performance DESC;
