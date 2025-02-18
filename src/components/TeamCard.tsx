@@ -1,6 +1,6 @@
 import React from "react";
 import PlayerData from "@/components/PlayerData";
-import { Team } from "../types";
+import { Team } from "../types/types";
 
 const TeamCard: React.FC<{ team: Team }> = ({ team }) => {
   return (
@@ -11,7 +11,7 @@ const TeamCard: React.FC<{ team: Team }> = ({ team }) => {
         {team.players.map((p) => (
           <div
             key={p.id}
-            className="border border-slate-600 py-1 px-2 rounded-md flex justify-between items-center text-sm"
+            className="border border-slate-600 py-1 px-2 rounded-md flex justify-between items-center text-xs"
           >
             {/* Hover effect for player data */}
             <PlayerData player={p} />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Player } from "../types";
+import { Player } from "../../types";
 
 export default function PlayerData({ player }: { player: Player }) {
   const [hovered, setHovered] = useState(false);
@@ -23,14 +23,14 @@ export default function PlayerData({ player }: { player: Player }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <span className="cursor-pointer text-blue-400">{player.name}</span>
+      <span className="cursor-pointer text-cyan-500">{player.name}</span>
 
       {hovered && player.stats?.length && (
-        <div className="absolute left-0 mt-2 w-56 bg-gray-800 text-white p-3 rounded-lg shadow-lg z-10">
-          <p className="font-bold text-lg mb-2">
+        <div className="absolute left-0 mt- w-80 bg-gray-800 text-white p-3 rounded-lg shadow-lg z-10">
+          <p className="font-bold text-lg">
             {player.name} {player.lastName}
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-xs text-gray-400">
             Position: {player.position.toUpperCase()}
           </p>
           <hr className="my-2 border-gray-600" />
@@ -39,7 +39,7 @@ export default function PlayerData({ player }: { player: Player }) {
               <p
                 key={key}
                 className={`text-sm ${
-                  relevantStats.includes(key) ? "text-yellow-400 font-bold" : ""
+                  relevantStats.includes(key) ? "text-cyan-300 font-bold" : ""
                 }`}
               >
                 {key}: {value}

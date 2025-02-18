@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:dbpush": "prisma db push"
   },
   "dependencies": {
     "@faker-js/faker": "^9.5.0",
@@ -29,5 +31,8 @@
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5"
-  }
+  },
+  "prisma": {
+    "schema": "./src/infrastructure/prisma/schema.prisma"  }
+  
 }

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import TeamCard from "@/components/TeamCard";
-import { Player, Team } from "../../types";
+import { Player, Team } from "../../types/types";
 
 export default function PlayersPage() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -128,7 +128,7 @@ export default function PlayersPage() {
         {error ? (
           <div className="text-red-500">{error}</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {teams.map((team) => (
               <TeamCard key={team.id} team={team} />
             ))}

@@ -30,3 +30,36 @@ WHERE (SELECT COUNT(*)
        WHERE tp2.teamId = ranked_players.teamId AND tp2.playerId <= ranked_players.player_id) <= 11
 GROUP BY t.name
 ORDER BY team_avg_performance DESC;
+
+Blazing Bananas
+Sharknado Champions
+Turbo Titans
+Sonic Sloths
+Titanium Toads
+Phantom Pickles
+Avalanche Outlaws
+Furious Forks
+Punching Broccos
+Vortex Vikings
+Stealthy Krakens
+Molten Mavericks
+Nitro Knights
+Spicy Kings
+Night Strikers
+Funky Flamingos
+Mystic Roosters
+Dizzy Fishys
+Chill Force
+Mighty Mice
+Goal Diggers
+Ball Busters
+Toxic Bullets
+Pitch Invaders
+Swift Kicks
+Neon Magic
+Moon Runners
+Boom Jokers
+Crimson Rhinos
+Yellow Force
+Atomic Frenzy
+Planet Ringers

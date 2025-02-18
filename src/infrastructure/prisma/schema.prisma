@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id          Int    @id @default(autoincrement())
+  name        String
+  lastName    String
+  position    String
+  age         Int
+  performance Json
+}
+
+model Team {
+  id   Int    @id @default(autoincrement())
+  name String
+}
+
+model TeamPlayers {
+  teamId   Int
+  playerId Int
+
+  @@id([teamId, playerId])
+}
