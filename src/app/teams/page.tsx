@@ -8,7 +8,7 @@ export default function PlayersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/teams")
+    fetch("/teams")
       .then(async (res) => {
         if (!res.ok) {
           throw new Error(`Failed to fetch teams: ${res.statusText}`);

@@ -1,4 +1,4 @@
-type Position = "gk" | "def" | "mid" | "fwd";
+export type Position = "gk" | "def" | "mid" | "fwd";
 
 interface Player {
   id: number;

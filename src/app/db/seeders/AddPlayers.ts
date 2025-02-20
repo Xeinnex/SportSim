@@ -1,48 +1,26 @@
 import { PrismaClient } from "@prisma/client";
-import { faker } from "@faker-js/faker";
+import { PlayerPerformanceService } from "@/domain/services/PlayerPerformanceService";
+import { PlayerFactoryService } from "@/domain/services/PlayerFactoryService";
+import { Position } from "@/domain/entities/Player";
 
 const prisma = new PrismaClient();
+const performanceService = new PlayerPerformanceService();
 
-async function generatePlayers(count: number, position: string) {
-  const validPositions = ["gk", "def", "mid", "fwd"];
-
-  if (!validPositions.includes(position)) {
-    throw new Error(
-      `Invalid position. Choose from: ${validPositions.join(", ")}`
-    );
-  }
-
-  const players = [];
-
+async function generatePlayers(count: number, position: Position) {
   for (let i = 0; i < count; i++) {
-    let name = "";
-    let lastName = "";
+    const { name, lastName, age } = PlayerFactoryService.generatePlayerInfo();
+    const performance = performanceService.generatePerformance(position, age);
 
-    do {
-      name = faker.person.firstName("male");
-    } while (name.length > 8);
-
-    do {
-      lastName = faker.person.lastName();
-    } while (lastName.length > 8);
-
-    players.push({
-      name,
-      lastName,
-      age: faker.number.int({ min: 16, max: 40 }),
-      position,
-      performance: {},
+    await prisma.player.create({
+      data: { name, lastName, age, position, performance },
     });
   }
-
-  await prisma.player.createMany({ data: players });
 
   console.log(
     `✅ Successfully added ${count} players in position: ${position}`
   );
-  return players;
 }
 
-generatePlayers(7, "mid")
+generatePlayers(63, "gk")
   .catch(console.error)
   .finally(() => prisma.$disconnect());
