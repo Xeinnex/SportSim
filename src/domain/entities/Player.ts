@@ -1,6 +1,6 @@
 export type Position = "gk" | "def" | "mid" | "fwd";
 
-interface Player {
+export interface Player {
   id: number;
   name: string;
   lastName: string;
@@ -20,4 +20,5 @@ interface Player {
     talent: number;
     save: number;
   };
+  teams?: TeamPlayers[];
 }

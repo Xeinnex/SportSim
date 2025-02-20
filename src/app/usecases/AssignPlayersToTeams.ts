@@ -2,7 +2,7 @@ import { PlayerService } from "@/domain/services/PlayerService";
 import { TeamService } from "@/domain/services/TeamService";
 import { Position } from "@/domain/entities/Player";
 
-export class AssignPlayersToTeamsUseCase {
+export class AssignPlayersToTeams {
   constructor(
     private playerService: PlayerService,
     private teamService: TeamService
