@@ -1,12 +1,12 @@
 import { Team } from "@/domain/entities/Team";
 
 export interface Game {
-  id: Number;
-  HomeTeamId: Number;
+  id: number;
+  HomeTeamId: number;
   HomeTeam: Team;
-  AwayTeamId: Number;
+  AwayTeamId: number;
   AwayTeam: Team;
-  HomeScore: Number;
-  AwayScore: Number;
-  GameNumber: Number;
+  HomeScore: number;
+  AwayScore: number;
+  GameNumber: number;
 }

@@ -2,7 +2,7 @@ import { GameEvent, Sector } from "@/domain/entities/GameEvent";
 import { EventOddsService } from "./EventOddsService";
 import { EventOutcomeService } from "./EventOutcomeService";
 
-class ShotEventService {
+export class ShotEventService {
   constructor(
     private eventOddsService: EventOddsService,
     private eventOutcomeService: EventOutcomeService
@@ -41,7 +41,7 @@ class ShotEventService {
     }
 
     // **Delegate shot outcome determination to EventOutcomeService**
-    let outcomes = this.eventOutcomeService.determineOutcome(
+    const outcomes = this.eventOutcomeService.determineOutcome(
       sector,
       teamType,
       "shot"

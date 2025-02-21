@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import type { Position } from "@/domain/entities/Player";
 
-class ShirtNumberService {
+export class ShirtNumberService {
   constructor(private prisma: PrismaClient) {}
 
   private preferredNumbers: Record<Position, number[]> = {
