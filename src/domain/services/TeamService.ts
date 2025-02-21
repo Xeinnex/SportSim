@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import type { Position } from "@/domain/entities/Player";
 
 export class TeamService {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma = new PrismaClient()) {}
 
   private positionLimits: Record<Position, number> = {
     gk: 2,

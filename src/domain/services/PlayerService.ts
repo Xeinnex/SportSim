@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import type { Position } from "@/domain/entities/Player";
 
 export class PlayerService {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma = new PrismaClient()) {}
 
   async getUnassignedPlayer(position: Position) {
     return await this.prisma.player.findFirst({
