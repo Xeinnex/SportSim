@@ -21,6 +21,6 @@ async function generatePlayers(count: number, position: Position) {
   );
 }
 
-generatePlayers(63, "gk")
+generatePlayers(1, "def")
   .catch(console.error)
   .finally(() => prisma.$disconnect());

@@ -8,29 +8,53 @@ datasource db {
 }
 
 model Player {
-  id          Int    @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   name        String
   lastName    String
   position    String
   age         Int
   performance Json
-
-  teams TeamPlayers[]
+  teams       TeamPlayers[]
 }
 
 model Team {
-  id   Int    @id @default(autoincrement())
-  name String
-
-  players TeamPlayers[]
+  id        Int           @id @default(autoincrement())
+  name      String
+  division  Int
+  players   TeamPlayers[]
+  homeGames Game[]        @relation(name: "HomeGames")
+  awayGames Game[]        @relation(name: "AwayGames")
 }
 
 model TeamPlayers {
   teamId      Int
   playerId    Int
   playerShirt Int    @default(99)
-  team        Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   player      Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  team        Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@id([teamId, playerId])
+  @@index([playerId], map: "TeamPlayers_playerId_fkey")
+}
+
+model Season {
+  id        Int       @id @default(autoincrement())
+  startDate DateTime
+  endDate   DateTime?
+  isActive  Boolean   @default(true)
+  games     Game[]
+}
+
+model Game {
+  id         Int    @id @default(autoincrement())
+  seasonId   Int
+  gameNumber Int
+  homeTeamId Int
+  awayTeamId Int
+  season     Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  homeTeam   Team   @relation(fields: [homeTeamId], references: [id], onDelete: Cascade, name: "HomeGames")
+  awayTeam   Team   @relation(fields: [awayTeamId], references: [id], onDelete: Cascade, name: "AwayGames")
+  status     String @default("scheduled") // Options: scheduled, ongoing, finished
+
+  @@unique([seasonId, gameNumber])
 }

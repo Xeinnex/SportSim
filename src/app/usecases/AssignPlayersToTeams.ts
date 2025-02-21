@@ -4,11 +4,13 @@ import { Position } from "@/domain/entities/Player";
 
 export class AssignPlayersToTeams {
   constructor(
-    private playerService: PlayerService,
-    private teamService: TeamService
+    private playerService = new PlayerService(),
+    private teamService = new TeamService()
   ) {}
 
   async execute() {
+    console.log("✅ XXXXXXXXXX.");
+
     const positions: Position[] = ["gk", "def", "mid", "fwd"];
 
     for (const position of positions) {
