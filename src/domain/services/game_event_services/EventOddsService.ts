@@ -36,7 +36,6 @@ export class EventOddsService {
     possession: "home" | "away",
     eventType: EventType
   ): number {
-    // Determine if the team is in defensive, midfield, or attacking third
     let zone: "defensive" | "midfield" | "attacking";
 
     if (possession === "home") {
