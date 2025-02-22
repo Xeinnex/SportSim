@@ -6,6 +6,7 @@ export interface Player {
   lastName: string;
   position: Position;
   age: number;
+  playerShirt?: number;
   performance: {
     speed: number;
     shooting: number;
@@ -20,5 +21,4 @@ export interface Player {
     talent: number;
     save: number;
   };
-  teams?: TeamPlayers[];
 }

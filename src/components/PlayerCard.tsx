@@ -12,7 +12,7 @@ export default function PlayerCard({
       <span>
         {player.name} {player.lastName} ({player.age}) - {player.position}
       </span>
-      <span className="font-bold text-orange-300">{overall}</span>
+      <span className="font-bold text-orange-300">ovr: {overall}</span>
     </li>
   );
 }
