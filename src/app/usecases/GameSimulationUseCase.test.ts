@@ -1,7 +1,7 @@
 import { GameSimulationUseCase } from "@/app/usecases/GameSimulationUseCase";
 import { Team } from "@/domain/entities/Team";
 import { Player, Position } from "@/domain/entities/Player";
-import { log, error } from "console";
+import { log } from "console";
 import { PlayerPerformanceService } from "@/domain/services/PlayerPerformanceService";
 import { PlayerEvalService } from "@/domain/services/PlayerEvalService";
 
@@ -36,7 +36,7 @@ describe("GameSimulationUseCase", () => {
       { position: "fwd", count: 3 },
     ];
 
-    let players: Player[] = [];
+    const players: Player[] = [];
     let idCounter = 1;
 
     for (const { position, count } of positions) {
@@ -51,7 +51,7 @@ describe("GameSimulationUseCase", () => {
           performance: performanceService.generatePerformance(position, age),
         };
 
-        const avgScore = PlayerEvalService.calculateAvgScore(player);
+        //const avgScore = PlayerEvalService.calculateAvgScore(player);
 
         players.push(player);
       }

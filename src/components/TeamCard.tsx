@@ -1,4 +1,3 @@
-import { Player } from "@/domain/entities/Player";
 import { Team } from "@/domain/entities/Team";
 import { PlayerEvalService } from "@/domain/services/PlayerEvalService";
 import PlayerCard from "./PlayerCard";
