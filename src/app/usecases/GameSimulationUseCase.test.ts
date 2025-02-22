@@ -51,8 +51,8 @@ describe("GameSimulationUseCase", () => {
           performance: performanceService.generatePerformance(position, age),
         };
 
-        //const avgScore = PlayerEvalService.calculateAvgScore(player);
-
+        const avgScore = PlayerEvalService.calculateAvgScore(player);
+        log(avgScore);
         players.push(player);
       }
     }
@@ -68,10 +68,10 @@ describe("GameSimulationUseCase", () => {
 
       const winner =
         result.winner === teamA.name
-          ? `\x1b[1;31m${teamA.name}\x1b[0m` // Green for team A
+          ? `\x1b[1;31m${teamA.name}\x1b[0m`
           : result.winner === teamB.name
-          ? `\x1b[1;36m${teamB.name}\x1b[0m` // Red for team B
-          : `\x1b[1;33mDraw\x1b[0m`; // Yellow for a draw
+          ? `\x1b[1;36m${teamB.name}\x1b[0m`
+          : `\x1b[1;33mDraw\x1b[0m`;
 
       log(
         `Run ${String(i + 1).padEnd(2)} | ${teamA.name.padEnd(2)} ${String(
