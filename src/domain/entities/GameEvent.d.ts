@@ -1,12 +1,6 @@
 import { Game } from "@/domain/entities/Game";
 
-export type EventType =
-  | "shot"
-  | "advance"
-  | "reroll"
-  | "throw_in"
-  | "foul"
-  | "substitution";
+export type EventType = "shot" | "advance" | "reroll" | "throw_in" | "foul";
 
 export type Sector = 1 | 2 | 3;
 
@@ -23,7 +17,8 @@ export type Outcome =
   | "switch_possession"
   | "retain_possession"
   | "penalty"
-  | "player_sent_off";
+  | "player_sent_off"
+  | "substitution";
 
 export interface GameEvent {
   id: number;

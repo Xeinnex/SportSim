@@ -1,33 +1,26 @@
-import { EventOddsService } from "./EventOddsService";
+import { EventProbabilityService } from "./EventProbabilityService";
 import { EventType, Outcome, Sector } from "@/domain/entities/GameEvent";
 
 class EventOutcomeService {
-  constructor(private eventOddsService: EventOddsService) {}
+  constructor(private eventProbabilityService: EventProbabilityService) {}
 
   determineOutcome(
     sector: Sector,
     possession: "home" | "away",
     eventType: EventType
   ): Outcome[] {
-    // Get event probability from EventOddsService
-    const eventProbability = this.eventOddsService.getEventProbability(
+    // Get event probability from EventProbabilityService
+    const eventProbability = this.eventProbabilityService.getEventProbability(
       sector,
       possession,
       eventType
     );
 
-    if (Math.random() * 100 > eventProbability) {
-      console.log(
-        `${eventType} event did not trigger (probability too low: ${eventProbability}%)`
-      );
-      return [];
-    }
-
     return this.getEventOutcome(eventType);
   }
 
   private getEventOutcome(eventType: EventType): Outcome[] {
-    const outcomeOdds: Record<
+    const outcomeProbability: Record<
       EventType,
       { outcome: Outcome; chance: number }[]
     > = {
@@ -51,12 +44,9 @@ class EventOutcomeService {
         { outcome: "retain_possession", chance: 80 },
         { outcome: "penalty", chance: 10 },
       ],
-      substitution: [
-        /* { outcome: "player_switched", chance: 100 } */
-      ],
     };
 
-    let outcomes = this.pickOutcome(outcomeOdds[eventType]);
+    let outcomes = this.pickOutcome(outcomeProbability[eventType]);
 
     // **Handle follow-up events based on primary outcome**
     if (eventType === "shot" && outcomes.includes("on_target")) {

@@ -1,49 +1,57 @@
 import { Team } from "@/domain/entities/Team";
+import { GameState } from "@/domain/services/game_event_services/GameStateService";
+import { GameEventUseCase } from "@/app/usecases/GameEventUseCase";
+import { log } from "console";
 
 export class GameSimulationUseCase {
-  execute(team1: Team, team2: Team, turns: number) {
-    let team1Score = 0;
-    let team2Score = 0;
+  private gameState: GameState; // Class property
+  private gameEventUseCase: GameEventUseCase;
+
+  constructor() {
+    this.gameState = new GameState();
+    this.gameEventUseCase = new GameEventUseCase(this.gameState); // ✅ Uses shared game state
+  }
+
+  execute(homeTeam: Team, awayTeam: Team, turns: number) {
+    this.gameState.currentSector = 2;
+    this.gameState.possession = "home";
+    this.gameState.homeScore = 0;
+    this.gameState.awayScore = 0;
 
     for (let i = 0; i < turns; i++) {
-      const team1Chance = this.calculateTeamChance(team1);
-      const team2Chance = this.calculateTeamChance(team2);
+      log(
+        `\nTurn ${i + 1}: ${
+          this.getPossessionTeam(homeTeam, awayTeam).name
+        } has possession in Sector ${this.gameState.currentSector}`
+      );
 
-      if (Math.random() * 100 < team1Chance) team1Score++;
-      if (Math.random() * 100 < team2Chance) team2Score++;
+      this.gameEventUseCase.triggerNextEvent(); // ✅ Uses GameEventUseCase to handle events
+
+      this.logGameState(homeTeam, awayTeam);
     }
 
     return {
-      team1Score,
-      team2Score,
-      winner: this.determineWinner(team1, team2, team1Score, team2Score),
+      homeScore: this.gameState.homeScore,
+      awayScore: this.gameState.awayScore,
+      winner: this.determineWinner(homeTeam, awayTeam),
     };
   }
 
-  private calculateTeamChance(team: Team): number {
-    if (!team.players || team.players.length === 0) return 0;
-
-    const totalOffense = team.players.reduce((sum, player) => {
-      return (
-        sum + (player.performance.shooting + player.performance.dribbling) / 2
-      );
-    }, 0);
-
-    return totalOffense / team.players.length;
+  private determineWinner(homeTeam: Team, awayTeam: Team): string {
+    if (this.gameState.homeScore > this.gameState.awayScore)
+      return homeTeam.name;
+    if (this.gameState.awayScore > this.gameState.homeScore)
+      return awayTeam.name;
+    return "Draw";
   }
 
-  private determineWinner(
-    team1: Team,
-    team2: Team,
-    score1: number,
-    score2: number
-  ) {
-    if (score1 > score2) {
-      return team1.name;
-    }
-    if (score2 > score1) {
-      return team2.name;
-    }
-    return "Draw";
+  private logGameState(homeTeam: Team, awayTeam: Team) {
+    log(
+      `Score: ${homeTeam.name} ${this.gameState.homeScore} - ${this.gameState.awayScore} ${awayTeam.name}`
+    );
+  }
+
+  private getPossessionTeam(homeTeam: Team, awayTeam: Team): Team {
+    return this.gameState.possession === "home" ? homeTeam : awayTeam;
   }
 }
