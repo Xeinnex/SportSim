@@ -4,12 +4,12 @@ import { GameEventUseCase } from "@/app/usecases/GameEventUseCase";
 import { log } from "console";
 
 export class GameSimulationUseCase {
-  private gameState: GameState; // Class property
+  private gameState: GameState;
   private gameEventUseCase: GameEventUseCase;
 
   constructor() {
     this.gameState = new GameState();
-    this.gameEventUseCase = new GameEventUseCase(this.gameState); // ✅ Uses shared game state
+    this.gameEventUseCase = new GameEventUseCase(this.gameState);
   }
 
   execute(homeTeam: Team, awayTeam: Team, turns: number) {
@@ -19,6 +19,7 @@ export class GameSimulationUseCase {
     this.gameState.awayScore = 0;
 
     for (let i = 0; i < turns; i++) {
+      this.gameState.ticksElapsed++; // ✅ Track game time (ticks elapsed)
       log(
         `\nTurn ${i + 1}: ${
           this.getPossessionTeam(homeTeam, awayTeam).name

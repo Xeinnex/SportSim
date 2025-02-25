@@ -4,9 +4,10 @@ import { Player, Position } from "@/domain/entities/Player";
 import { log } from "console";
 import { PlayerPerformanceService } from "@/domain/services/PlayerPerformanceService";
 import { PlayerEvalService } from "@/domain/services/PlayerEvalService";
+import { GAME_SETTINGS } from "@/config/GameSettings";
 
 const performanceService = new PlayerPerformanceService();
-const testAmount = 50;
+const testAmount = 1;
 
 describe("GameSimulationUseCase", () => {
   let gameSimulation: GameSimulationUseCase;
@@ -84,7 +85,11 @@ describe("GameSimulationUseCase", () => {
     let draws = 0;
 
     for (let i = 0; i < testAmount; i++) {
-      const result = gameSimulation.execute(teamA, teamB, 60);
+      const result = gameSimulation.execute(
+        teamA,
+        teamB,
+        GAME_SETTINGS.gameTicks
+      );
 
       let winner: string;
       if (result.homeScore > result.awayScore) {

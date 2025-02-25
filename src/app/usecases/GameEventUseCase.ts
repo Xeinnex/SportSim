@@ -31,8 +31,13 @@ export class GameEventUseCase {
     ) as Record<(typeof eventTypes)[number], number>;
 
     const { event, probability } = selectEvent(eventChances);
-    log(`🎯 Event selected: ${event} (Base probability: ${probability}%)`);
-
+    if (event == "reroll" || event === "throw_in") {
+      log(
+        `🎯 \x1b[1;32mEvent selected: ${event} (Base probability: ${probability}%)\x1b[0m`
+      );
+    } else {
+      log(`🎯 Event selected: ${event} (Base probability: ${probability}%)`);
+    }
     this.executeEvent(event);
   }
 
@@ -43,6 +48,15 @@ export class GameEventUseCase {
         break;
       case "shot":
         EventExecutionService.handleShot(this.gameState);
+        break;
+      case "foul":
+        EventExecutionService.handleFoul(this.gameState);
+        break;
+      case "reroll":
+        EventExecutionService.handleReroll(this.gameState);
+        break;
+      case "throw_in":
+        EventExecutionService.handleThrowIn(this.gameState);
         break;
       default:
         log(`Unhandled event: ${event}`);
