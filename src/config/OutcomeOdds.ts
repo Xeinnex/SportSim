@@ -28,15 +28,3 @@ export const OUTCOME_ODDS: OutcomeOdds = {
     "reroll.rebound": { stay: 70, move_back: 30 },
   },
 };
-
-
-Shot
-    ontarget: 30{
-          op1
-          op2
-          op3
-    }
-    offtarget
-          op1
-          op2
-          op3
