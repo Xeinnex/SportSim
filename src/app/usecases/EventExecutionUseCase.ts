@@ -43,7 +43,7 @@ export class EventExecutionService {
   static handleAdvance(state: GameState) {
     const roll = Math.random() * 100;
 
-    if (roll < OUTCOME_ODDS.advance.retain_possession) {
+    if (roll < OUTCOME_ODDS.base.advance.retain_possession) {
       state.currentSector += state.possession === "home" ? 1 : -1;
       log(
         `${state.possession.toUpperCase()} advances to Sector ${
@@ -52,15 +52,15 @@ export class EventExecutionService {
       );
     } else if (
       roll <
-      OUTCOME_ODDS.advance.retain_possession +
-        OUTCOME_ODDS.advance.rebound.chance
+      OUTCOME_ODDS.base.advance.retain_possession +
+        OUTCOME_ODDS.base.advance.rebound
     ) {
       log(`${state.possession.toUpperCase()} attempt results in a REBOUND.`);
 
       const reboundRoll = Math.random() * 100;
 
       if (this.canMoveBackOnRebound(state)) {
-        if (reboundRoll < OUTCOME_ODDS.advance.rebound.outcomes.move_back) {
+        if (reboundRoll < OUTCOME_ODDS.outcomes["advance.rebound"].move_back) {
           state.currentSector += state.possession === "home" ? -1 : 1;
           log(
             `${state.possession.toUpperCase()} REBOUND - Moved BACK to Sector ${
@@ -92,12 +92,12 @@ export class EventExecutionService {
   static handleShot(state: GameState) {
     const shotRoll = Math.random() * 100;
 
-    if (shotRoll < OUTCOME_ODDS.shot.on_target.chance) {
+    if (shotRoll < OUTCOME_ODDS.base.shot.on_target) {
       log(`${state.possession.toUpperCase()} takes a SHOT ON TARGET!`);
 
       const outcomeRoll = Math.random() * 100;
 
-      if (outcomeRoll < OUTCOME_ODDS.shot.on_target.outcomes.goal) {
+      if (outcomeRoll < OUTCOME_ODDS.outcomes["shot.on_target"].goal) {
         log(`${state.possession.toUpperCase()} SCORES! ⚽`);
         if (state.possession === "home") {
           state.homeScore++;
@@ -108,16 +108,16 @@ export class EventExecutionService {
         state.resetSectorAfterGoal();
       } else if (
         outcomeRoll <
-        OUTCOME_ODDS.shot.on_target.outcomes.goal +
-          OUTCOME_ODDS.shot.on_target.outcomes.save
+        OUTCOME_ODDS.outcomes["shot.on_target"].goal +
+          OUTCOME_ODDS.outcomes["shot.on_target"].save
       ) {
         log(`❌ Saved by the keeper!`);
         state.switchPossession();
       } else if (
         outcomeRoll <
-        OUTCOME_ODDS.shot.on_target.outcomes.goal +
-          OUTCOME_ODDS.shot.on_target.outcomes.save +
-          OUTCOME_ODDS.shot.on_target.outcomes.rebound.chance
+        OUTCOME_ODDS.outcomes["shot.on_target"].goal +
+          OUTCOME_ODDS.outcomes["shot.on_target"].save +
+          OUTCOME_ODDS.outcomes["shot.on_target"].rebound
       ) {
         log(`🔄 Rebound! The attacking team keeps the ball.`);
 
@@ -126,7 +126,7 @@ export class EventExecutionService {
         if (this.canMoveBackOnRebound(state)) {
           if (
             reboundRoll <
-            OUTCOME_ODDS.shot.on_target.outcomes.rebound.outcomes.move_back
+            OUTCOME_ODDS.outcomes["shot.on_target.rebound"].move_back
           ) {
             state.currentSector += state.possession === "home" ? -1 : 1;
             log(
@@ -150,10 +150,10 @@ export class EventExecutionService {
         }
       } else if (
         outcomeRoll <
-        OUTCOME_ODDS.shot.on_target.outcomes.goal +
-          OUTCOME_ODDS.shot.on_target.outcomes.save +
-          OUTCOME_ODDS.shot.on_target.outcomes.rebound.chance +
-          OUTCOME_ODDS.shot.on_target.outcomes.corner
+        OUTCOME_ODDS.outcomes["shot.on_target"].goal +
+          OUTCOME_ODDS.outcomes["shot.on_target"].save +
+          OUTCOME_ODDS.outcomes["shot.on_target"].rebound +
+          OUTCOME_ODDS.outcomes["shot.on_target"].corner
       ) {
         log(`🏳️ Corner kick awarded!`);
       } else {
@@ -165,12 +165,12 @@ export class EventExecutionService {
 
       const outcomeRoll = Math.random() * 100;
 
-      if (outcomeRoll < OUTCOME_ODDS.shot.off_target.outcomes.corner) {
+      if (outcomeRoll < OUTCOME_ODDS.outcomes["shot.off_target"].corner) {
         log(`🏳️ Corner kick awarded!`);
       } else if (
         outcomeRoll <
-        OUTCOME_ODDS.shot.off_target.outcomes.corner +
-          OUTCOME_ODDS.shot.off_target.outcomes.rebound.chance
+        OUTCOME_ODDS.outcomes["shot.off_target"].corner +
+          OUTCOME_ODDS.outcomes["shot.off_target"].rebound
       ) {
         log(`🔄 Rebound! The attacking team keeps the ball.`);
 
@@ -180,7 +180,7 @@ export class EventExecutionService {
         if (this.canMoveBackOnRebound(state)) {
           if (
             reboundRoll <
-            OUTCOME_ODDS.shot.off_target.outcomes.rebound.outcomes.move_back
+            OUTCOME_ODDS.outcomes["shot.off_target.rebound"].move_back
           ) {
             state.currentSector += state.possession === "home" ? -1 : 1;
             log(
@@ -213,21 +213,21 @@ export class EventExecutionService {
     const foulingTeam = state.possession === "home" ? "away" : "home"; // Defending team commits the foul
     log(`${foulingTeam.toUpperCase()} commits a FOUL!`);
 
-    // 🎲 **Main Foul Outcome Roll** (decides retain possession, yellow, or red)
+    // 🎲 **Main Foul Outcome Roll**
     const foulRoll = Math.random() * 100;
 
-    if (foulRoll < OUTCOME_ODDS.foul.retain_possession) {
+    if (foulRoll < OUTCOME_ODDS.base.foul.retain_possession) {
       log(`✅ No card issued. Play resumes.`);
     } else if (
       foulRoll <
-      OUTCOME_ODDS.foul.retain_possession + OUTCOME_ODDS.foul.yellow
+      OUTCOME_ODDS.base.foul.retain_possession + OUTCOME_ODDS.base.foul.yellow
     ) {
       log(`🟨 Yellow Card issued to ${foulingTeam.toUpperCase()}!`);
     } else if (
       foulRoll <
-      OUTCOME_ODDS.foul.retain_possession +
-        OUTCOME_ODDS.foul.yellow +
-        OUTCOME_ODDS.foul.red
+      OUTCOME_ODDS.base.foul.retain_possession +
+        OUTCOME_ODDS.base.foul.yellow +
+        OUTCOME_ODDS.base.foul.red
     ) {
       log(`🟥 Red Card issued to ${foulingTeam.toUpperCase()}!`);
     }
@@ -239,16 +239,14 @@ export class EventExecutionService {
     const attackingSector = state.possession === "home" ? 3 : 1;
     if (state.currentSector === attackingSector) {
       const penaltyRoll = Math.random() * 100;
-
-      if (penaltyRoll < OUTCOME_ODDS.foul.penalty) {
+      if (penaltyRoll < OUTCOME_ODDS.base.foul.penalty) {
         log(`⚽ PENALTY awarded to ${state.possession.toUpperCase()}!`);
       }
     }
 
     // 🤕 **Injury Roll (completely independent)**
     const injuryRoll = Math.random() * 100;
-
-    if (injuryRoll < OUTCOME_ODDS.foul.injury) {
+    if (injuryRoll < OUTCOME_ODDS.base.foul.injury) {
       log(`🤕 Injury occurred to a player on ${foulingTeam.toUpperCase()}!`);
     }
   }
@@ -256,12 +254,13 @@ export class EventExecutionService {
   static handleReroll(state: GameState) {
     const roll = Math.random() * 100;
 
-    if (roll < OUTCOME_ODDS.reroll.substitution) {
+    if (roll < OUTCOME_ODDS.base.reroll.substitution) {
       log(`🔄 Substitution triggered by roll.`);
       this.checkForSubstitution(state);
     } else if (
       roll <
-      OUTCOME_ODDS.reroll.substitution + OUTCOME_ODDS.reroll.retain_possession
+      OUTCOME_ODDS.base.reroll.substitution +
+        OUTCOME_ODDS.base.reroll.retain_possession
     ) {
       log(`🔄 Play continues. Possession retained.`);
     } else {
@@ -271,7 +270,7 @@ export class EventExecutionService {
       const sector = getRelativeSector(state);
 
       if (
-        reboundRoll < OUTCOME_ODDS.reroll.rebound.outcomes.move_back &&
+        reboundRoll < OUTCOME_ODDS.outcomes["reroll.rebound"].move_back &&
         sector !== "defensive" // Prevent moving back from defensive sector
       ) {
         state.currentSector += state.possession === "home" ? -1 : 1;
@@ -286,7 +285,7 @@ export class EventExecutionService {
     const throwInRoll = Math.random() * 100;
     log(`🎲 Throw-In Roll: ${throwInRoll}`);
 
-    if (throwInRoll < OUTCOME_ODDS.throw_in.retain_possession) {
+    if (throwInRoll < OUTCOME_ODDS.base.throw_in.retain_possession) {
       log(
         `🏳️‍🌫️ THROW-IN for ${state.possession.toUpperCase()} - Possession retained.`
       );

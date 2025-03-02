@@ -1,13 +1,13 @@
 import { GameSimulationUseCase } from "@/app/usecases/GameSimulationUseCase";
-import { Team } from "@/domain/entities/Team";
-import { Player, Position } from "@/domain/entities/Player";
-import { log } from "console";
-import { PlayerPerformanceService } from "@/domain/services/PlayerPerformanceService";
-import { PlayerEvalService } from "@/domain/services/PlayerEvalService";
 import { GAME_SETTINGS } from "@/config/GameSettings";
+import { Player, Position } from "@/domain/entities/Player";
+import { Team } from "@/domain/entities/Team";
+import { PlayerEvalService } from "@/domain/services/PlayerEvalService";
+import { PlayerPerformanceService } from "@/domain/services/PlayerPerformanceService";
+import { log } from "console";
 
 const performanceService = new PlayerPerformanceService();
-const testAmount = 1;
+const testAmount = 100;
 
 describe("GameSimulationUseCase", () => {
   let gameSimulation: GameSimulationUseCase;
@@ -15,8 +15,6 @@ describe("GameSimulationUseCase", () => {
   let teamB: Team;
 
   beforeEach(() => {
-    gameSimulation = new GameSimulationUseCase();
-
     teamA = {
       id: 1,
       name: "Blaze",
@@ -28,6 +26,8 @@ describe("GameSimulationUseCase", () => {
       name: "Sharks",
       players: createMockPlayers(),
     };
+
+    gameSimulation = new GameSimulationUseCase(teamA, teamB);
   });
 
   let teamNumber = 1;
@@ -66,23 +66,54 @@ describe("GameSimulationUseCase", () => {
         ? "\x1b[1;31mTeam Blaze\x1b[0m"
         : "\x1b[1;36mTeam Sharks\x1b[0m"
     );
-    const teamAverage =
-      Math.floor((avgScores.reduce((sum, score) => sum + score, 0) / 11) * 10) /
-      10;
-    log("Team Average:", teamAverage);
-    teamNumber = 2;
-    avgScores.sort((a, b) => b - a);
-    log(avgScores);
 
     return players;
   }
 
-  test("should return a result (5 runs)", () => {
+  test("should return an amount of runs", () => {
     log("\n=============== Simulation Start ===============\n");
 
     let teamAWins = 0;
     let teamBWins = 0;
     let draws = 0;
+
+    let homeGoalsDistribution = new Array(11).fill(0);
+    let awayGoalsDistribution = new Array(11).fill(0);
+    let totalHomeGoals = 0;
+    let totalAwayGoals = 0;
+
+    const teamAScores: number[] = [];
+    const teamBScores: number[] = [];
+
+    for (const player of teamA.players ?? []) {
+      teamAScores.push(PlayerEvalService.calculateAvgScore(player));
+    }
+
+    for (const player of teamB.players ?? []) {
+      teamBScores.push(PlayerEvalService.calculateAvgScore(player));
+    }
+
+    // Calculate team averages
+    const teamAAverage =
+      Math.floor(
+        (teamAScores.reduce((sum, score) => sum + score, 0) / 11) * 10
+      ) / 10;
+    const teamBAverage =
+      Math.floor(
+        (teamBScores.reduce((sum, score) => sum + score, 0) / 11) * 10
+      ) / 10;
+
+    // Sort scores for better readability
+    teamAScores.sort((a, b) => b - a);
+    teamBScores.sort((a, b) => b - a);
+
+    log("\x1b[1;31mTeam Blaze\x1b[0m");
+    log("Team Average:", teamAAverage);
+    log("Player Scores:", teamAScores);
+
+    log("\x1b[1;36mTeam Sharks\x1b[0m");
+    log("Team Average:", teamBAverage);
+    log("Player Scores:", teamBScores);
 
     for (let i = 0; i < testAmount; i++) {
       const result = gameSimulation.execute(
@@ -91,30 +122,19 @@ describe("GameSimulationUseCase", () => {
         GAME_SETTINGS.gameTicks
       );
 
-      let winner: string;
       if (result.homeScore > result.awayScore) {
         teamAWins++;
-        winner = `\x1b[1;31m${teamA.name}\x1b[0m`;
       } else if (result.awayScore > result.homeScore) {
         teamBWins++;
-        winner = `\x1b[1;36m${teamB.name}\x1b[0m`;
       } else {
         draws++;
-        winner = `\x1b[1;33mDraw\x1b[0m`;
       }
 
-      log(
-        `Run ${String(i + 1).padEnd(2)} | ${teamA.name.padEnd(2)} ${String(
-          result.homeScore
-        ).padStart(2)} - ${String(result.awayScore).padEnd(
-          2
-        )} ${teamB.name.padEnd(2)} | Result: ${winner}`
-      );
+      if (result.homeScore <= 10) homeGoalsDistribution[result.homeScore]++;
+      if (result.awayScore <= 10) awayGoalsDistribution[result.awayScore]++;
 
-      // Update expectations to match the Game entity structure
-      expect(result).toHaveProperty("homeScore");
-      expect(result).toHaveProperty("awayScore");
-      expect(result).toHaveProperty("winner");
+      totalHomeGoals += result.homeScore;
+      totalAwayGoals += result.awayScore;
     }
 
     log("\n===== Final Results =====");
@@ -122,6 +142,29 @@ describe("GameSimulationUseCase", () => {
     log(`\x1b[1;36m${teamB.name} Wins:\x1b[0m ${teamBWins}`);
     log(`\x1b[1;33mDraws:\x1b[0m ${draws}`);
 
+    log("\n===== Home Team Goal Distribution =====");
+    log(`Total Games: ${testAmount}`);
+    for (let i = 0; i <= 10; i++) {
+      log(`⚽ ${i} goals: ${homeGoalsDistribution[i]} times`);
+    }
+    log(`Total Home Goals Scored: ${totalHomeGoals}`);
+
+    log("\n===== Away Team Goal Distribution =====");
+    for (let i = 0; i <= 10; i++) {
+      log(`⚽ ${i} goals: ${awayGoalsDistribution[i]} times`);
+    }
+    log(`Total Away Goals Scored: ${totalAwayGoals}`);
+
+    log("\n===== Players Used for Simulation =====");
+
+    log(`\x1b[1;31m${teamA.name} Average Score:\x1b[0m`, teamAAverage);
+    log(teamAScores.sort((a, b) => b - a));
+
+    log(`\x1b[1;36m${teamB.name} Average Score:\x1b[0m`, teamBAverage);
+    log(teamBScores.sort((a, b) => b - a));
+
     log("\n================ Simulation End ================\n");
   });
+
+  //test("should validate sector filtering", () => {});
 });

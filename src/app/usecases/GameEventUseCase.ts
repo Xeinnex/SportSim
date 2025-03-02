@@ -3,6 +3,10 @@ import { EventExecutionService } from "@/domain/services/game_event_services/Eve
 import { EventProbabilityService } from "@/domain/services/game_event_services/EventProbabilityService";
 import { selectEvent } from "@/domain/utils/EventSelector";
 import { log } from "console";
+import { getRelativeSector } from "@/domain/utils/GetRelativeSector";
+import { getSectorStatsModifier } from "@/domain/services/game_event_services/AvgRelevantPlayerStatsService";
+import { Team } from "@/domain/entities/Team";
+import { updateEventOdds } from "@/domain/services/game_event_services/UpdateEventOddsService";
 
 export class GameEventUseCase {
   private gameState: GameState; // Class property
@@ -11,7 +15,7 @@ export class GameEventUseCase {
     this.gameState = initialState; // Assigning passed state to class property
   }
 
-  triggerNextEvent() {
+  triggerNextEvent(homeTeam: Team, awayTeam: Team) {
     const eventTypes = [
       "advance",
       "shot",
@@ -19,6 +23,29 @@ export class GameEventUseCase {
       "throw_in",
       "foul",
     ] as const;
+
+    // Determine the sector type dynamically
+    const sectorType = getRelativeSector(this.gameState);
+
+    // Identify attacking and defending teams based on possession
+    const attackingTeam =
+      this.gameState.possession === "home" ? homeTeam : awayTeam;
+    const defendingTeam =
+      this.gameState.possession === "home" ? awayTeam : homeTeam;
+
+    // Get sector stats difference
+    const statsDifference = getSectorStatsModifier(
+      sectorType,
+      attackingTeam,
+      defendingTeam
+    );
+
+    const keyToUpdate = sectorType === "attacking" ? "shot" : "advance";
+
+    // Apply stats adjustment only to the relevant event type
+    const isHomeTeam = this.gameState.possession === "home";
+    updateEventOdds(sectorType, keyToUpdate, statsDifference, isHomeTeam);
+
     const eventChances = Object.fromEntries(
       eventTypes.map((event) => [
         event,
@@ -31,13 +58,12 @@ export class GameEventUseCase {
     ) as Record<(typeof eventTypes)[number], number>;
 
     const { event, probability } = selectEvent(eventChances);
-    if (event == "reroll" || event === "throw_in") {
-      log(
-        `🎯 \x1b[1;32mEvent selected: ${event} (Base probability: ${probability}%)\x1b[0m`
-      );
-    } else {
-      log(`🎯 Event selected: ${event} (Base probability: ${probability}%)`);
-    }
+
+    log(
+      `🎯 Event selected: ${event} (Final probability: ${probability.toFixed(
+        2
+      )}%)`
+    );
     this.executeEvent(event);
   }
 

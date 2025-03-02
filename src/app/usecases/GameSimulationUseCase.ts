@@ -6,10 +6,19 @@ import { log } from "console";
 export class GameSimulationUseCase {
   private gameState: GameState;
   private gameEventUseCase: GameEventUseCase;
+  private homeTeam: Team;
+  private awayTeam: Team;
 
-  constructor() {
+  constructor(homeTeam: Team, awayTeam: Team) {
     this.gameState = new GameState();
     this.gameEventUseCase = new GameEventUseCase(this.gameState);
+    this.homeTeam = homeTeam;
+    this.awayTeam = awayTeam;
+  }
+
+  // Add this getter to access gameState in tests
+  public getGameState(): GameState {
+    return this.gameState;
   }
 
   execute(homeTeam: Team, awayTeam: Team, turns: number) {
@@ -19,14 +28,14 @@ export class GameSimulationUseCase {
     this.gameState.awayScore = 0;
 
     for (let i = 0; i < turns; i++) {
-      this.gameState.ticksElapsed++; // ✅ Track game time (ticks elapsed)
+      this.gameState.ticksElapsed++;
       log(
         `\nTurn ${i + 1}: ${
           this.getPossessionTeam(homeTeam, awayTeam).name
         } has possession in Sector ${this.gameState.currentSector}`
       );
 
-      this.gameEventUseCase.triggerNextEvent(); // ✅ Uses GameEventUseCase to handle events
+      this.gameEventUseCase.triggerNextEvent(this.homeTeam, this.awayTeam);
 
       this.logGameState(homeTeam, awayTeam);
     }
